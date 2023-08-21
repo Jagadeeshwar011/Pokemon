@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Ajax.Utilities;
+using Newtonsoft.Json;
 using PagedList;
 using Pokemon.Models;
 using System;
@@ -34,20 +35,42 @@ namespace Pokemon.Controllers
             {
                 ViewBag.firstname = TempData["userName"];
             }
-            string endpoint = "https://localhost:7113/Pokeman";
+            string endpoint = "https://pokeapi.co/api/v2/pokemon?limit=100'";
             using (HttpClient client = new HttpClient())
             {
                 using (var Response = await client.GetAsync(endpoint))
                 {
                     if (Response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        var pokemonListModel = JsonConvert.DeserializeObject<List<PokemonModel>>(await Response.Content.ReadAsStringAsync());
-                        var data = pokemonListModel.ToPagedList(page ?? 1, 5);
+                        var data1 = Response.Content.ReadAsStringAsync();
+                        var listPK = new List<PokemonModel>();
+                        var reuslt = data1.Result;
+                        if (reuslt != null && reuslt.Length > 0)
+                        {
+                            var results = JsonConvert.DeserializeObject<RootObject>(reuslt);
+                            foreach (var item in results.results)
+                            {
+                                var pokedata = new PokemonModel();
+                                 pokedata.Name = item.name;
+                                 string url = item.url;
+                                url = url.Replace("https://pokeapi.co/api/v2/pokemon/", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/");
+
+                                pokedata.url =  $"{url.Substring(0, url.Length - 1)}.png";
+                                    // $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{i}.png";
+                                // i++;
+                                listPK.Add(pokedata);
+                                // pokedata.Name = item
+
+                            }
+                        }
+                        // var pokemonListModel = JsonConvert.DeserializeObject<List<PokemonModel>>(await Response.Content.ReadAsStringAsync());
+                        var data = listPK.ToPagedList(page ?? 1, 5);
                         var count = data.Count;
                         TempData["pokemanList"] = data;
+
                         TempData.Keep("pokemanList");
                         ViewData["pl"] = data;
-                        return View((pokemonListModel.ToPagedList(page ?? 1, 5)));
+                        return View((listPK.ToPagedList(page ?? 1, 5)));
                         // return RedirectToAction("Home");
                     }
                     else
@@ -84,8 +107,9 @@ namespace Pokemon.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> IndexAsync(string option, string search)
+        public async Task<ActionResult> IndexAsync(string option, string search, int? page)
         {
+            /*
             if (!string.IsNullOrEmpty(search))
             {
                 ViewData["error"] = "";
@@ -126,17 +150,73 @@ namespace Pokemon.Controllers
                 ViewData["pl"] = list;
             }
             return View();
+            */
             //if a user choose the radio button option as Subject  
-           
+            string endpoint = "https://pokeapi.co/api/v2/pokemon?limit=100'";
+            using (HttpClient client = new HttpClient())
+            {
+                using (var Response = await client.GetAsync(endpoint))
+                {
+                    if (Response.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        var data1 = Response.Content.ReadAsStringAsync();
+                        var listPK = new List<PokemonModel>();
+                        var reuslt = data1.Result;
+                        if (reuslt != null && reuslt.Length > 0)
+                        {
+                            var results = JsonConvert.DeserializeObject<RootObject>(reuslt);
+                            foreach (var item in results.results)
+                            {
+                                var pokedata = new PokemonModel();
+                                pokedata.Name = item.name;
+                                string url = item.url;
+                                url = url.Replace("https://pokeapi.co/api/v2/pokemon/", "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/");
+
+                                pokedata.url = $"{url.Substring(0, url.Length - 1)}.png";
+                                // $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{i}.png";
+                                // i++;
+                                listPK.Add(pokedata);
+                                // pokedata.Name = item
+
+                            }
+                        }
+                        var listPoke = new List<PokemonModel>();
+                        // var pokemonListModel = JsonConvert.DeserializeObject<List<PokemonModel>>(await Response.Content.ReadAsStringAsync());
+                        if (!string.IsNullOrEmpty(search))
+                        {
+                            var searchVal = listPK.Find(x => x.Name == search);
+                            
+                            listPoke.Add(searchVal);
+                            TempData["pokemanList"] = listPoke;
+
+                            TempData.Keep("pokemanList");
+                            ViewData["pl"] = listPoke;
+                        }
+                        else
+                        {
+                            listPoke = listPK;
+                        }
+                        return View((listPoke.ToPagedList(page ?? 1, 5)));
+                        // return RedirectToAction("Home");
+                    }
+                    else
+                    {
+                        ModelState.Clear();
+                        ModelState.AddModelError(string.Empty, "Username or Password is Incorrect");
+                        return View();
+                    }
+                }
+            }
+
         }
 
-        public async Task AddFavouriteAsync(int id)
+        public async Task AddFavouriteAsync(string pokemonName)
         {
             var userDetails = Session["userSession"];
             if (userDetails != null)
             {
                 var details = Session["userSession"] as LoginResponse;
-                string endpoint = "https://localhost:7113/UserFavorite"+ "?"+"userId=" + details.Id + "&pokemanId=" + id;
+                string endpoint = "https://localhost:7113/UserFavorite"+ "?"+"userId=" + details.Id + "&pokemonName=" + pokemonName;
                 using (HttpClient client = new HttpClient())
                 {
                     using (var Response = await client.GetAsync(endpoint))
@@ -146,10 +226,10 @@ namespace Pokemon.Controllers
                             var pokemonListModel = JsonConvert.DeserializeObject<List<UserFavourite>>(await Response.Content.ReadAsStringAsync());
                             if (pokemonListModel != null)
                             {
-                                var checkExist = pokemonListModel.Find(x => x.Pokeman.Id == id);
+                                var checkExist = pokemonListModel.Find(x => x.PokemonName == pokemonName);
                                 if (checkExist == null)
                                 {
-                                    await AddFavAsync(details.Id, id);
+                                    await AddFavAsync(details.Id, pokemonName);
                                     ViewBag.favourite = pokemonListModel.Count + 1;
                                 }
                                 
@@ -198,16 +278,16 @@ namespace Pokemon.Controllers
         }
 
         
-        private async Task AddFavAsync(int userId, int pokemonId)
+        private async Task AddFavAsync(int userId, string pokemonName)
         {
             UserFavourite user = new UserFavourite()
             {
                 UserId = userId,
-                PokemanId = pokemonId
+                PokemonName = pokemonName
             };
 
             StringContent content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
-            string endpoint = "https://localhost:7113/UserFavorite?userId=" + userId + "&pokemanId=" + pokemonId;
+            string endpoint = "https://localhost:7113/UserFavorite?userId=" + userId + "&pokemonName=" + pokemonName;
             using (HttpClient client = new HttpClient())
             {
                 using (var Response = await client.PostAsync(endpoint,null))
@@ -221,17 +301,17 @@ namespace Pokemon.Controllers
             }
         }
 
-        private async Task RemoveFavAsync(int userId, int pokemonId)
+        private async Task RemoveFavAsync(int userId, string pokemonName)
         {
             UserFavourite user = new UserFavourite()
             {
                 UserId = userId,
-                PokemanId = pokemonId
+                PokemonName = pokemonName
             };
 
             StringContent content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
             // UserFavorite?userId=7&pokemanId=1
-            string endpoint = "https://localhost:7113/UserFavorite?userId="+userId + "&pokemanId=" + pokemonId;
+            string endpoint = "https://localhost:7113/UserFavorite?userId="+userId + "&pokemonName=" + pokemonName;
             using (HttpClient client = new HttpClient())
             {
                 using (var Response = await client.DeleteAsync(endpoint))

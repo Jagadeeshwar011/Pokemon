@@ -99,7 +99,6 @@
                     }
                     &nbsp; &nbsp;
 
-                    @Html.ActionLink("Add Pokemon", "Index", "PokeMonUpload", null, null)
                 </div>
             </div>
         </div>
@@ -116,33 +115,38 @@
         {
             foreach (var product in Model)
             {
-                <div class="col-sm-4">
-                    <table class="table table-bordered" style="border-color:transparent; box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0), 0 0px 3px 0 rgba(0, 0, 0, 0.19);border-top-left-radius:3px;border-top-right-radius:0px;">
+                if (product != null)
+                {
+                    <div class="col-sm-4">
+                        <table class="table table-bordered" style="border-color:transparent; box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0), 0 0px 3px 0 rgba(0, 0, 0, 0.19);border-top-left-radius:3px;border-top-right-radius:0px;">
 
-                        <tr style="text-align:center">
-                            <td colspan="2" style="border-color:transparent;">
-                                @if (product.Image != null)
-                                {
-
-                                    var imageSrc1 = string.Format("data:image/jpg;base64,{0}", product.Image);
-                                    <img src="@imageSrc1" alt="" width="70" height="70" />
+                            <tr style="text-align:center">
+                                <td colspan="2" style="border-color:transparent;">
                                     <span style="color:#337ab7">@product.Name</span><br />
-                                    <a href="/Pokeman/Index/@product.Id">details</a>
+                                    <a href="/Details/Index/?name=@product.Name">details</a>
+                                    <img src="@product.url" alt="" width="70" height="70" />
+                                    <button style="background-color:lavender;" class="btn btn-outline-success" onclick="incrementCookie('@product.Name')" name="compare">&nbsp;&nbsp;&nbsp;<i class="glyphicon glyphicon-heart"></i></button>
+                                    @if (product.Image != null)
+                                    {
+
+                                        var imageSrc1 = string.Format("data:image/jpg;base64,{0}", product.Image);
+                                        <img src="@imageSrc1" alt="" width="70" height="70" />
+
+                                    }
 
 
-                                    <button style="background-color:lavender;" class="btn btn-outline-success" onclick="incrementCookie(@product.Id)" name="compare">&nbsp;&nbsp;&nbsp;<i class="glyphicon glyphicon-heart"></i></button>
-
-                                }
-
-
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
 
 
-                    </table>
+                        </table>
 
-                </div>
-
+                    </div>
+                }
+                else
+                {
+                    <p>No Data found</p>
+                }
             }
 
 
@@ -182,9 +186,10 @@
 <script type="text/javascript">
 
     var userValue = "";
-    function incrementCookie(name) {
-        alert(1);
-        urlVal = '/Home/AddFavourite/' + name;
+    function incrementCookie(pokemonName) {
+       
+        urlVal = '/Home/AddFavourite/?pokemonName=' + pokemonName;
+        alert(urlVal);
         jQuery.ajax({
             url: urlVal,
             type: 'GET',

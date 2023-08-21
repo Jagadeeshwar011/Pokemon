@@ -7,8 +7,6 @@ public class UserFavorite {
 
      public User User {get;set;}
 
-     public int PokemonId {get;set;}
-
-     public Pokeman Pokeman {get;set;}
+     public string PokemonName {get;set;}
 
 }

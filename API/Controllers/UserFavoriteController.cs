@@ -20,16 +20,16 @@ public class UserFavoriteController : ControllerBase {
     }
 
     [HttpPost]
-    public IActionResult Create(int userId, int pokemanId)
+    public IActionResult Create(int userId, string pokemonName)
     {
-        _logic.Create(userId, pokemanId);
+        _logic.Create(userId, pokemonName);
         return Ok(new { message = "User favorite created" });
     }
 
     [HttpDelete]
-    public IActionResult Remove(int userId, int pokemanId)
+    public IActionResult Remove(int userId, string pokemonName)
     {
-        _logic.Remove(userId, pokemanId);
+        _logic.Remove(userId, pokemonName);
         return Ok(new { message = "User favorite removed" });
     }
 }

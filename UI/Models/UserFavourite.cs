@@ -13,9 +13,7 @@ namespace Pokemon.Models
 
         public UserModel User { get; set; }
 
-        public int PokemanId { get; set; }
-
-        public PokemonModel Pokeman { get; set; }
+        public string PokemonName { get; set; }
 
     }
 }

@@ -169,6 +169,8 @@
     </Compile>
     <Compile Include="Models\LoginResponse.cs" />
     <Compile Include="Models\PokemonModel.cs" />
+    <Compile Include="Models\DetailsModel.cs" />
+    <Compile Include="Models\Result.cs" />
     <Compile Include="Models\UserFavourite.cs" />
     <Compile Include="Models\UserModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -10,9 +10,9 @@ public class UserFavoriteLogic : IUserFavoriteLogic
     public UserFavoriteLogic(IUserFavoriteRepository logic) {
         _repository = logic;
     }
-    public void Create(int userId, int pokemanId)
+    public void Create(int userId, string pokemonName)
     {
-        _repository.Create(userId, pokemanId);
+        _repository.Create(userId, pokemonName);
     }
 
     public IEnumerable<UserFavorite> GetAll(int userId)
@@ -20,8 +20,8 @@ public class UserFavoriteLogic : IUserFavoriteLogic
         return _repository.GetAll(userId);
     }
 
-    public void Remove(int userId, int pokemanId)
+    public void Remove(int userId, string pokemonName)
     {
-        _repository.Remove(userId, pokemanId);
+        _repository.Remove(userId, pokemonName);
     }
 }

@@ -14,7 +14,7 @@ namespace Pokemon.Controllers
     public class DetailsController : AsyncController
     {
         // GET: Details
-        public async Task<ActionResult> IndexAsync(int? page)
+        public async Task<ActionResult> IndexAsync(string name)
         
         {
             if (TempData["Fav"] != null)
@@ -31,20 +31,17 @@ namespace Pokemon.Controllers
             {
                 ViewBag.firstname = TempData["userName"];
             }
-            string endpoint = "https://localhost:7113/Pokeman";
+            string endpoint = $"https://pokeapi.co/api/v2/pokemon/{name}";
             using (HttpClient client = new HttpClient())
             {
                 using (var Response = await client.GetAsync(endpoint))
                 {
                     if (Response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        var pokemonListModel = JsonConvert.DeserializeObject<List<PokemonModel>>(await Response.Content.ReadAsStringAsync());
+                        var pokemonListModel = JsonConvert.DeserializeObject<DetailsModel>(await Response.Content.ReadAsStringAsync());
                         TempData["pokemanList"] = pokemonListModel;
                         TempData.Keep("pokemanList");
-                        var Users = pokemonListModel.Take(10).ToList();     //At first i will show only 5 data per page so i had used Take(5)  
-                        int UsersCount = Convert.ToInt32(Math.Ceiling((double)pokemonListModel.Count() / 10));
-                        ViewData["pl"] = Users;
-                        return View(pokemonListModel.ToPagedList(page ?? 1, 3));
+                        return View(pokemonListModel);
                         // return RedirectToAction("Home");
                     }
                     else
@@ -83,7 +80,6 @@ namespace Pokemon.Controllers
                     else
                     {
                         ModelState.Clear();
-                        ModelState.AddModelError(string.Empty, "Username or Password is Incorrect");
                         return Json("error");
                        //  return View();
                     }
